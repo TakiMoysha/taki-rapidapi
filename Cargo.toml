@@ -1,0 +1,8 @@
+[package]
+name = "taki-rapidapi"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pyo3 = "0.23.3"
+wtx = "0.25.0"
