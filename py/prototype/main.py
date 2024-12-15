@@ -3,10 +3,16 @@ import json
 from granian.rsgi import Scope as RSGIScope
 from typing import Dict, Iterable, Mapping
 
+ 
+class RSGIApplication:
+    async def __rsgi__(self, scope: RSGIScope, proto):
+        ...
 
-class Connection:
-    pass
+    def __rsgi_init__(self, loop):
+        ...
 
+    def __rsgi_del__(self, loop):
+        ...
 
 class RSGIResponse:
     """A low-lever RSGI response class, with stubs and defaults, oriented only for prototyping (JSON)."""
@@ -44,11 +50,6 @@ class RSGIResponse:
             "headers": [(k.encode(), v.encode()) for k, v in self.headers.items()],
         }
         await send(event)
-
-
-async def asgi_app(scope, receive, send):
-    conn = Connection(scope, receive=receive, send=send)
-    await RSGIResponse()
 
 
 async def rsgi_app(scope: RSGIScope, proto):
