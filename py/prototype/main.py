@@ -3,16 +3,14 @@ import json
 from granian.rsgi import Scope as RSGIScope
 from typing import Dict, Iterable, Mapping
 
- 
+
 class RSGIApplication:
-    async def __rsgi__(self, scope: RSGIScope, proto):
-        ...
+    async def __rsgi__(self, scope: RSGIScope, proto): ...
 
-    def __rsgi_init__(self, loop):
-        ...
+    def __rsgi_init__(self, loop): ...
 
-    def __rsgi_del__(self, loop):
-        ...
+    def __rsgi_del__(self, loop): ...
+
 
 class RSGIResponse:
     """A low-lever RSGI response class, with stubs and defaults, oriented only for prototyping (JSON)."""
