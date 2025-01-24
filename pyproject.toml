@@ -1,9 +1,38 @@
 [project]
-name = "taki-rapidapi"
-version = "0.1.0"
+name = "rapidapi"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "granian>=1.6.4",
+authors = [{ name = "TakiMoysha", email = "mpwema782@gmail.com" }]
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
 ]
+dynamic = ["version"]
+
+dependencies = ["structlog>=25.1.0"]
+
+[project.scripts]
+dev = "rapid_api.cli:run_cli"
+
+[build-system]
+requires = ["maturin>=1.8,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+bindings = "pyo3"
+features = ["pyo3/extension-module"]
+
+[dependency-groups]
+dev = [
+    "bpython>=0.24",
+    "maturin-import-hook>=0.1.0",
+]
+
+# [build-system]
+# requires = ["hatchling"]
+# build-backend = "hatchling.build"
+#
+# [tool.hatch.build]
+# packages = ["rapid_api"]
