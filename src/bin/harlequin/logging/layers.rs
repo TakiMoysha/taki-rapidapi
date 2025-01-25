@@ -3,13 +3,15 @@ mod visitors;
 use std::collections::BTreeMap;
 
 use tracing::span;
+use tracing::Instrument;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::Layer;
 use visitors::{JsonVisitor, PrintlnVisitor};
 
+pub struct ServerLogLayer;
+
 #[derive(Debug)]
 pub struct ServerFieldStorage(BTreeMap<String, serde_json::Value>);
-pub struct ServerLogLayer;
 
 impl<S> Layer<S> for ServerLogLayer
 where
@@ -22,25 +24,17 @@ where
         id: &span::Id,
         ctx: tracing_subscriber::layer::Context<'_, S>,
     ) {
-        let span_buffer = BTreeMap::new();
-        let span = ctx.span(id).unwrap();
-        // println!("new_span");
-        // println!("  name={}", span.name());
-        // println!("  target={}", span.metadata().target());
-        // println!("  fields={:?}", span.fields());
-        // println!();
-
-        let mut visitor = PrintlnVisitor;
+        let mut buffer = BTreeMap::new();
+        let mut visitor = JsonVisitor(&mut buffer);
         attrs.record(&mut visitor);
-
-        let storage = ServerFieldStorage(span_buffer);
+        let storage = ServerFieldStorage(buffer);
         let span = ctx.span(id).unwrap();
         let mut extensions = span.extensions_mut();
         extensions.insert::<ServerFieldStorage>(storage);
     }
 
     fn on_event(&self, event: &tracing::Event<'_>, ctx: tracing_subscriber::layer::Context<'_, S>) {
-        let scope = ctx.event_scope(event).unwrap();
+        let scope = ctx.event_scope(event).expect("event has no scope()");
         let mut spans = vec![];
 
         for span in scope.from_root() {
@@ -64,8 +58,24 @@ where
             "event": event.metadata().name(),
             "level": event.metadata().level().to_string(),
             "fields": buf,
+            "spans": spans,
         });
 
         println!("{}", serde_json::to_string_pretty(&output).unwrap());
+    }
+
+    fn on_record(
+        &self,
+        span: &span::Id,
+        values: &span::Record<'_>,
+        ctx: tracing_subscriber::layer::Context<'_, S>,
+    ) {
+        let span = ctx.span(span).unwrap();
+
+        let mut extensions_mut = span.extensions_mut();
+        let storage = extensions_mut.get_mut::<ServerFieldStorage>().unwrap();
+        let json_data: &mut BTreeMap<String, serde_json::Value> = &mut storage.0;
+        let mut visitor = JsonVisitor(json_data);
+        values.record(&mut visitor);
     }
 }

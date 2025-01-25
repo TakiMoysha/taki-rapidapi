@@ -1,10 +1,11 @@
 use std::env;
-// use tracing::subscriber::set_global_default;
-// use tracing_subscriber::filter::EnvFilter;
+use tracing::subscriber::set_global_default;
 use tracing::info;
 use tracing::info_span;
+use tracing_subscriber::fmt::Layer;
 use tracing_subscriber::prelude::*;
-use tracing_subscriber::Layer;
+use tracing_subscriber::EnvFilter;
+use tracing_subscriber::Registry;
 
 mod layers;
 
@@ -19,16 +20,16 @@ pub fn setup_logging() -> Result<(), Box<dyn std::error::Error>> {
     let inner_span = info_span!("inner", level = 0);
     let _inner_entered = inner_span.enter();
 
-    info!(pretty = true, answer = 42, message = "example");
-    info!(pretty = false, answer = 42, message = "example");
-    info!(answer = 42, message = "example");
+    // info!(pretty = true, answer = 42, message = "example");
+    // info!(pretty = false, answer = 42, message = "example");
+    // info!(answer = 42, message = "example");
 
-    // let filter = match env::var("RUST_LOG") {
-    //     Ok(_) => EnvFilter::from_env("RUST_LOG"),
-    //     _ => EnvFilter::new("template=info"),
-    // };
-    // let fmt = tracing_subscriber::fmt::Layer::default();
-    // let subscriber = filter.and_then(fmt).with_subscriber(Registry::default());
-    // set_global_default(subscriber)?;
+    let filter = match env::var("RUST_LOG") {
+        Ok(_) => EnvFilter::from_env("RUST_LOG"),
+        _ => EnvFilter::new("template=info"),
+    };
+    let fmt = Layer::default();
+    let subscriber = filter.and_then(fmt).with_subscriber(Registry::default());
+    set_global_default(subscriber)?;
     Ok(())
 }
