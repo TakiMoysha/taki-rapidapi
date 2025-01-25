@@ -8,7 +8,7 @@ use tracing_subscriber::Layer;
 use visitors::{JsonVisitor, PrintlnVisitor};
 
 #[derive(Debug)]
-pub struct SFieldStorage(BTreeMap<String, serde_json::Value>);
+pub struct ServerFieldStorage(BTreeMap<String, serde_json::Value>);
 pub struct ServerLogLayer;
 
 impl<S> Layer<S> for ServerLogLayer
@@ -24,46 +24,48 @@ where
     ) {
         let span_buffer = BTreeMap::new();
         let span = ctx.span(id).unwrap();
-        println!("new_span");
-        println!("  name={}", span.name());
-        println!("  target={}", span.metadata().target());
-        println!("  fields={:?}", span.fields());
-        println!();
+        // println!("new_span");
+        // println!("  name={}", span.name());
+        // println!("  target={}", span.metadata().target());
+        // println!("  fields={:?}", span.fields());
+        // println!();
 
         let mut visitor = PrintlnVisitor;
         attrs.record(&mut visitor);
 
-        let storage = SFieldStorage(span_buffer);
+        let storage = ServerFieldStorage(span_buffer);
         let span = ctx.span(id).unwrap();
         let mut extensions = span.extensions_mut();
-        extensions.insert::<SFieldStorage>(storage);
+        extensions.insert::<ServerFieldStorage>(storage);
     }
 
     fn on_event(&self, event: &tracing::Event<'_>, ctx: tracing_subscriber::layer::Context<'_, S>) {
-        let parent_span = ctx.event_span(event).unwrap();
-        println!("span");
-        println!("  name={}", parent_span.name());
-        println!("  target={}", parent_span.metadata().target());
-
         let scope = ctx.event_scope(event).unwrap();
+        let mut spans = vec![];
+
         for span in scope.from_root() {
-            println!("scope");
-            println!("  name={}", span.name());
-            println!("  target={}", span.metadata().target());
+            let extensions = span.extensions();
+            let storage = extensions.get::<ServerFieldStorage>().unwrap();
+            let field_data: &BTreeMap<String, serde_json::Value> = &storage.0;
+            spans.push(serde_json::json!({
+                "name": span.name(),
+                "target": span.metadata().target(),
+                "level": format_args!("{}", span.metadata().level()),
+                "fields": field_data
+            }));
         }
-        println!();
 
-        // let buffer = &mut BTreeMap::new();
-        // let mut visitor = JsonVisitor(buffer);
-        // event.record(&mut visitor);
+        let mut buf = BTreeMap::new();
+        let mut visitor = JsonVisitor(&mut buf);
+        event.record(&mut visitor);
 
-        // let output = serde_json::json!({
-        //     "target": event.metadata().target(),
-        //     "event": event.metadata().name(),
-        //     "level": event.metadata().level().to_string(),
-        //     "fields": buffer
-        // });
+        let output = serde_json::json!({
+            "target": event.metadata().target(),
+            "event": event.metadata().name(),
+            "level": event.metadata().level().to_string(),
+            "fields": buf,
+        });
 
-        // println!("{}", serde_json::to_string_pretty(&output).unwrap());
+        println!("{}", serde_json::to_string_pretty(&output).unwrap());
     }
 }
