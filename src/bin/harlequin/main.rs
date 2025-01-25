@@ -98,6 +98,7 @@ use std::sync::Arc;
 use types::StreamingContext;
 
 mod logging;
+mod demo_futures;
 
 #[tokio::main]
 async fn main() {

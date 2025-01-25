@@ -18,24 +18,28 @@ pub async fn transform() {
 mod futures_tests {
     use futures::stream;
     use futures::stream::StreamExt;
+    use throbber::Throbber;
 
     use super::*;
 
     #[tokio::test]
-    async fn test_futures_pipeline() {
+    async fn should_run_concurrent() {
+        let mut throbber = Throbber::new().message("processing ...".to_string());
         let start = OffsetDateTime::now_utc();
         let pipeline = stream::repeat_with(OffsetDateTime::now_utc)
             .then(|_| fetch())
             .then(|_| transform());
 
+        throbber.start();
         pipeline.take(4).count().await;
 
         let duration = OffsetDateTime::now_utc() - start;
-        println!("duration: {}", duration.as_seconds_f32());
+        throbber.success(format!("duration: {}\n", duration.as_seconds_f32()));
     }
 
     #[tokio::test]
-    async fn test_futures_pipeline_with_cpus() {
+    async fn should_run_parallel() {
+        let mut throbber = Throbber::new().message("processing ...".to_string());
         const NUM_CPUS: usize = 4;
         let start = OffsetDateTime::now_utc();
         // no longer await the futures
@@ -45,15 +49,10 @@ mod futures_tests {
             .map(|_| transform())
             .buffered(NUM_CPUS);
 
-        println!(
-            "pipeline started: {}",
-            (OffsetDateTime::now_utc() - start).as_seconds_f32()
-        );
-        pipeline.take(4).count().await;
+        throbber.start();
+        pipeline.take(NUM_CPUS).count().await;
 
-        println!(
-            "\tfinal: {}",
-            (OffsetDateTime::now_utc() - start).as_seconds_f32()
-        );
+        let duration = OffsetDateTime::now_utc() - start;
+        throbber.success(format!("duration: {}\n", duration.as_seconds_f32()));
     }
 }
