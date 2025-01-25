@@ -1,3 +1,7 @@
+
+bin-harlequin:
+    RUST_LOG=info cargo run --bin harlequin
+
 py-dev *args:
     uv run dev {{args}}
 

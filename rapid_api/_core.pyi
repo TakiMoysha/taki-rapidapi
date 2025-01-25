@@ -1,2 +1,2 @@
-class Klass:
+class RapidCore:
     def __init__(self) -> None: ...

@@ -18,3 +18,5 @@ uv run maturin_import_hook site install
 1. https://github.com/emmett-framework/granian/blob/master/docs/spec/RSGI.md
 2. https://www.maturin.rs/import_hook
 3. https://github.com/quickwit-oss/tantivy-py
+4. https://burgers.io/custom-logging-in-rust-using-tracing
+5. 
