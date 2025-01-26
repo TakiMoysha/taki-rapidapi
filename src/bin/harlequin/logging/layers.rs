@@ -8,6 +8,7 @@ use tracing_subscriber::prelude::*;
 use tracing_subscriber::Layer;
 use visitors::{JsonVisitor, PrintlnVisitor};
 
+#[derive(Default, Debug)]
 pub struct ServerLogLayer;
 
 #[derive(Debug)]

@@ -52,6 +52,7 @@ async fn shutdown_signal() {
     // }
 }
 
+#[inline]
 pub async fn load_config() -> StreamingContext {
     let config_path = env::current_dir()
         .map(|p| p.join("config.json"))

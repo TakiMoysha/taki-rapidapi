@@ -1,7 +1,8 @@
+use layers::ServerLogLayer;
 use std::env;
-use tracing::subscriber::set_global_default;
 use tracing::info;
 use tracing::info_span;
+use tracing::subscriber::set_global_default;
 use tracing_subscriber::fmt::Layer;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
@@ -28,7 +29,7 @@ pub fn setup_logging() -> Result<(), Box<dyn std::error::Error>> {
         Ok(_) => EnvFilter::from_env("RUST_LOG"),
         _ => EnvFilter::new("template=info"),
     };
-    let fmt = Layer::default();
+    let fmt = ServerLogLayer::default();
     let subscriber = filter.and_then(fmt).with_subscriber(Registry::default());
     set_global_default(subscriber)?;
     Ok(())
