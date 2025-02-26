@@ -1,4 +1,7 @@
-##
+## Rust-based Server Development Framework
+
+rust - rust based server develoment lib (RbMSDL)
+python - rust based server development framework (RbMSDF)
 
 ## Installation
 

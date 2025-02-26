@@ -1,6 +1,6 @@
 
 bin-clown:
-    RUST_LOG=info cargo run --bin clown-bin
+    RUST_LOG=info cargo run --bin clown
 
 py-dev *args:
     uv run dev {{args}}
