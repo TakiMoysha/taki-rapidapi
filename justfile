@@ -1,3 +1,4 @@
+set dotenv-load := true
 
 bin-clown:
     RUST_LOG=info cargo run --bin clown
